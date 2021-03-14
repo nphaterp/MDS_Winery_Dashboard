@@ -24,13 +24,20 @@ display_df = display_df.rename(columns={'title': 'Title', 'variety':'Variety', '
 ###############################################################################
 
 
+
+def create_card(header='Header', content='Card Content'): 
+    card = dbc.Card([dbc.CardHeader(header),
+        dbc.CardBody(html.Label([content]))])
+    return card 
+
+
 app = dash.Dash(__name__ , external_stylesheets=[dbc.themes.BOOTSTRAP])
 # Set the app title
-app.title = "MDS Winery"
+app.title = "Fraudulent Buisness Detection"
 server=app.server
 
 colors = {
-    'background': "#111111",
+    'background': "#00000",
     'text': '#522889'
 }
 
@@ -63,7 +70,7 @@ def toggle_collapse(n, is_open):
 app.layout = dbc.Container([
     dbc.Row([
         dbc.Col([
-            html.H1('MDS Winery Dashboard', style={'text-align': 'center', 'color': 'white', 'font-size': '40px', 'font-family': 'Georgia'}),
+            html.H1('Fraudulent Buisness Detection', style={'text-align': 'center', 'color': 'white', 'font-size': '40px', 'font-family': 'Georgia'}),
             dbc.Collapse(html.P(
                 """
                 The dashboard will help you with your wine shopping today. Whether you desire crisp Californian Chardonnay or bold Cabernet Sauvignon from Texas, simply select a state and the wine type. The results will help you to choose the best wine for you.
@@ -72,7 +79,7 @@ app.layout = dbc.Container([
             ), id='collapse'),
         ], md=10),
         dbc.Col([collapse])
-    ], style={'backgroundColor': '#522889', 'border-radius': 3, 'padding': 15, 'margin-top': 22, 'margin-bottom': 22, 'margin-right': 11}),
+    ], style={'backgroundColor': '#0F5DB6', 'border-radius': 3, 'padding': 15, 'margin-top': 22, 'margin-bottom': 22, 'margin-right': 11}),
 
     dcc.Tabs([
         dcc.Tab([
@@ -81,7 +88,7 @@ app.layout = dbc.Container([
                     html.Br(),
                     html.Label([
                         'State Selection'], style={
-                'color': '#522889', "font-weight": "bold"
+                'color': '#0F5DB6', "font-weight": "bold"
             }),
                     dcc.Dropdown(
                         id='province-widget',
@@ -91,7 +98,7 @@ app.layout = dbc.Container([
                         placeholder='Select a State'
                     ),
                     html.Br(),
-                    html.Label(['Wine Type'], style={'color': '#522889', "font-weight": "bold"}
+                    html.Label(['Wine Type'], style={'color': '#0F5DB6', "font-weight": "bold"}
                     ),
                     dcc.Dropdown(
                         id='wine_variety',
@@ -100,79 +107,47 @@ app.layout = dbc.Container([
                         multi=True
                     ),
                     html.Br(),
-                    html.Label(['Price Range'], style={
-                'color': '#522889', "font-weight": "bold"
-            }
-                    ),
-                    dcc.RangeSlider(
-                        id='price',
-                        min=df['price'].min(),
-                        max=df['price'].max(),
-                        value=[df['price'].min(), df['price'].max()],
-                        marks = {4: '$4', 25: '$25', 50: '$50', 75: '$75', 100: '$100','color': '#522889'}
-                    ),
-                    html.Label(['Points Range'], style={
-                'color': '#522889', "font-weight": "bold"
-            }
-                    ),
-                    dcc.RangeSlider(
-                        id='points',
-                        min=df['points'].min(),
-                        max=df['points'].max(),
-                        value=[df['points'].min(), df['points'].max()],
-                        marks = {80: '80', 85: '85', 90: '90', 95: '95', 100: '100'}
-                        ),
-                    html.Br(),
-                    dbc.Button('Reset', id = 'reset-btn-1', n_clicks=0, className='reset-btn-1'),                  
-                    ], style={'border': '1px solid', 'border-radius': 3, 'padding': 15, 'margin-top': 22, 'margin-bottom': 22, 'margin-right': 0}, md=4,
+                    dbc.Button('Search', id = 'reset-btn-1', n_clicks=0, className='reset-btn-1'),                  
+                    ], style={'border': '1px solid', 'border-radius': 3, 'padding': 15, 'margin-top': 22, 'margin-bottom': 15, 'margin-right': 0, 'height' : 300}, md=4,
                 ),
+                dbc.Col([], md = 2),
                 dbc.Col([
-                    html.Iframe(
-                        id = 'maps',
-                        style={'border-width': '0', 'width': '100%', 'height': '460px'})
-                    ], md=8)
+                        html.Br(),
+                        html.Br(),
+                        dbc.Row([create_card('card1', 'card 1 content')]),
+                        dbc.Row([create_card('Card2','Card 2 Content')]),
+                    ], md=2),
+                 dbc.Col([
+                     html.Br(),
+                     html.Br(),
+                     dbc.Row([create_card('card3', 'card3 content')]),
+                     dbc.Row([create_card('Card4','Card 4 Content')]),
+                    ], md=4)
                 ]),
+                html.Br(),
             dbc.Row([
                     dbc.Col([
-                    html.Br(),
-                    dbc.Row([
-                            dbc.Card([
-                                dbc.CardHeader('Highest Value Wine:', 
-                                style={'fontWeight': 'bold', 'color':'white','font-size': '22px', 'backgroundColor':'#522889','width': '100%', 'height': '50px'}),
-                                dbc.CardBody(id='highest_value_name', style={'color': '#522889', 'fontSize': 18, 'width': '300px', 'height': '70px'}),
-                            dbc.CardBody(
-                                id='highest_value', style={'color': '#522889', 'fontSize': 18, 'width': '300px', 'height': '70px'})])]),
-                    html.Br(),     
-                    dbc.Row([
-                            dbc.Card([
-                                dbc.CardHeader('Highest Score Wine:', 
-                                style={'fontWeight': 'bold', 'color':'white','font-size': '22px', 'backgroundColor':'#522889', 'width': '100%', 'height': '50px'}),
-                                dbc.CardBody(id='highest_score_name', style={'color': '#522889', 'fontSize': 18, 'width': '300px', 'height': '70px'}),
-                            dbc.CardBody(
-                                id='highest_score',style={'color': '#522889', 'fontSize': 18, 'width': '300px', 'height': '70px'}),
+                        html.Iframe(
+                            id = 'plots',
+                            style={'border-width': '0', 'width': '100%', 'height': '200px'})
                         ]),
-                        ])
-                    ], md = 3),
-                dbc.Col([
-                    
-                    html.Iframe(
-                        id = 'plots',
-                        style={'border-width': '0', 'width': '100%', 'height': '510px'})
-                    ]),
-
+                    dbc.Col([
+                    dbc.Row([
+                        html.Br(),
+                            dbc.Card([
+                                dbc.CardHeader('Key Insights:', 
+                                style={'fontWeight': 'bold', 'color':'white','font-size': '22px', 'backgroundColor':'#0F5DB6','width': '750px', 'height': '50px'}),
+                                dbc.CardBody(id='highest_value_name', style={'color': '#2EC9F0', 'fontSize': 18, 'width': '750px', 'height': '70px'}),
+                            dbc.CardBody(
+                                id='highest_value', style={'color': '#522889', 'fontSize': 18, 'width': '750px', 'height': '380px'})])]),
+                    html.Br(), 
+                    ], md = 8),
                 ]),
             ], label='MDS Winery'),
         dcc.Tab([
             dbc.Row([
                 dbc.Col([
                     html.Br(),
-                    # html.Label([
-                    #     'Country Selection']),
-                    # dcc.Dropdown(
-                    #     options=[{'label': country, 'value': country} for country in df['country'].unique()],
-                    #     placeholder='Select a Country', 
-                    #     multi=True
-                    # ),
                     html.Label([
                         'State Selection'], style={
                 'color': '#522889', "font-weight": "bold"
@@ -254,7 +229,6 @@ app.layout = dbc.Container([
                 ], md=8)
             ]),
             dbc.Row([
-                
                 dbc.Col([
                     html.Br(),
                     html.Iframe(
@@ -797,7 +771,5 @@ def reset_2(clicks):
         return 
     else:
         return clicks
-
-
 if __name__ == '__main__':
     app.run_server(debug=True)
